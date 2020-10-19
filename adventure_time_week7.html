@@ -1,0 +1,331 @@
+<html>
+	<head>
+		<title>Week 7 - Adventure Game</title>
+		
+		<style>
+			.imgSameSize {
+				width: 240px;
+			}
+			
+			div#output {
+				width: 25%;
+				height: 200px;
+				background-color: #CCCCCC;
+				overflow-y: scroll;
+				position: absolute;
+				right: 0px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Adventure Time</h1>
+
+		<div id="output"></div>
+		
+		<h2>Actions:</h2>
+		<button id = "attackBtn">Attack</button>
+		<button id = "drinkSPotionBtn">Drink Small Potion</button>
+		<button id = "drinkMPotionBtn">Drink Medium Potion</button>
+		<button id = "drinkLPotionBtn">Drink Large Potion</button>
+		<hr>
+		
+		<h2>Inventory:</h2>
+		<ul>
+			<li id = "SPotionInvNum">Small Potions: </li>
+			<li id = "MPotionInvNum">Medium Potions: </li>
+			<li id = "LPotionInvNum">Large Potions: </li>
+		</ul>
+		<hr>
+		
+		<h3>Player:</h3>
+		<p id = "playerDispName"></p>
+		<h3>HP:</h3>
+		<p id = "playerDispHP"></p>
+		<hr>
+				
+		<h3>Enemy:</h3>
+		<p id = "enemyDispName"></p>
+		<h3>HP:</h3>
+		<p id = "enemyDispHP"><p>
+		<img class = "imgSameSize" src = "">
+		<hr>
+		
+		<h2>Battle Results:</h2>
+		<p id = "result"></p>
+		<p id = "lootDropped"></p>
+				
+		<script src = "human.js"></script>			<!--gets info from human.js -->
+		<script src = "monsters.js"></script>		<!--gets info from monsters.js -->
+		
+		<script>
+			console.log(human);
+			
+			var attackButton = document.getElementById("attackBtn");
+			attackButton.addEventListener("click", skirmish);
+			var drinkSPotionButton = document.getElementById("drinkSPotionBtn");
+			drinkSPotionButton.addEventListener("click",drink_small_potion);
+			var drinkMPotionButton = document.getElementById("drinkMPotionBtn");
+			drinkMPotionButton.addEventListener("click",drink_medium_potion);
+			var drinkLPotionButton = document.getElementById("drinkLPotionBtn");
+			drinkLPotionButton.addEventListener("click",drink_large_potion);
+					
+			var game = {
+				user: human,						//gets info from human.js
+				monsters: listOfMonsters,			//gets info from monsters.js
+				current_mob: current_enemy
+			}
+			
+			// Display Inventory
+			var SPotionNum = document.getElementById("SPotionInvNum");
+			SPotionNum.innerText = "Small Potions: " + game.user.sml_potion_num;
+			var MPotionNum = document.getElementById("MPotionInvNum");
+			MPotionNum.innerText = "Medium Potions: " + game.user.med_potion_num;
+			var LPotionNum = document.getElementById("LPotionInvNum");
+			LPotionNum.innerText = "Large Potions: " + game.user.lrg_potion_num;
+			
+			function generateRandomNumber(maxNumber) {
+				return Math.floor(Math.random() * maxNumber);			
+			}
+			
+			var current_enemy_index = generateRandomNumber(game.monsters.length);
+			console.log(current_enemy_index);
+							
+			//1. get the monsters array from the game object
+			//2. using the square bracket, get the monster we want with the random number we generated
+			//3. using dot notation, get the name			
+			var current_enemy = game.monsters[current_enemy_index].name;
+			console.log(current_enemy);
+			
+			// IN-CLASS GROUP WORK
+			// We want to utilize the DOM and make the game more interactive
+			// - Create a "current_enemy" key in the game object
+			// - Populate that key with a random monster from your array (like we did above)
+			// - Add a button on the screen called "Attack" (give it an ID as well)
+			// - When that button is pressed (eventlistener), call a function named "skirmish"
+			// - The skirmish function is going to subtrack our user's damage from the current enemy's hp
+			// - AND take the current_enemies attack from our HP
+			// - After doing both of those things, check to see if either our or the monsters HP is <= 0
+			// - If it is, use alert() to end the game
+
+			game.current_mob = game.monsters[current_enemy_index];
+			
+			function skirmish() {
+				var endResult;
+				var lootResult;
+				
+				//updates player HP
+				var playerHP = document.getElementById("playerDispHP");
+				playerHP = game.user.hp - game.current_mob.damage;
+				game.user.hp = playerHP;
+				
+				//updates enemy HP
+				var enemyHP = document.getElementById("enemyDispHP");
+				enemyHP = game.current_mob.hp - game.user.damage;
+				game.current_mob.hp = enemyHP;
+				
+				//updates display for user
+				playerDispHP.innerText = playerHP;
+				enemyDispHP.innerText = enemyHP;
+				
+				//checks outcome of skirmish
+				if (playerHP <= 0 && enemyHP <= 0) {
+					playerDispHP.innerText = 0;
+					enemyDispHP.innerText = 0;
+					endResult = document.getElementById("result");
+					endResult.innerText = "You Died";
+					createOutput(game.user.name + " slain by " + game.current_mob.name + ".");
+					alert("Game Over");
+				} else if (playerHP <= 0){
+					playerDispHP.innerText = 0;
+					endResult = document.getElementById("result");
+					createOutput(game.user.name + " slain by " + game.current_mob.name + ".");
+					endResult.innerText = "You Died";
+					alert("Game Over");
+				} else if (enemyHP <= 0){
+					enemyDispHP.innerText = 0;
+					endResult = document.getElementById("result");
+					endResult.innerText = "VICTORY!";
+					lootResult = document.getElementById("lootDropped");
+					lootResult.innerText = lootDropSystem();
+					createOutput(game.user.name + " defeated " + game.current_mob.name + ".");
+					alert("Game Completed!");
+				}
+				
+			}
+			
+			//Add a value to your user object called "has_potion" and set the value to true
+			//Add another button to the screen for 'drink potion'
+			//When that button is clicked, call a function called 'drink potion'
+			//In the function, set the "has_potion" key to false
+			//Also, add 10hp to your user's current HP
+			//If the game.user.has_potion is false, use an alert to let the user know that they don't have a potion to use.
+			function drink_small_potion() {				
+				if (game.user.sml_potion_num > 0) {
+					game.user.sml_potion_num = game.user.sml_potion_num - 1;
+					game.user.hp = game.user.hp + items[0].heal;
+					playerDispHP.innerText = game.user.hp;
+					SPotionNum.innerText = "Small Potions: " + game.user.sml_potion_num;
+				} else {
+					alert("You do not have a small potion to use.");
+				}								
+			}
+			
+			function drink_medium_potion() {
+				if (game.user.med_potion_num > 0) {
+					game.user.med_potion_num = game.user.med_potion_num - 1;
+					game.user.hp = game.user.hp + items[1].heal;
+					playerDispHP.innerText = game.user.hp;
+					MPotionNum.innerText = "Medium Potions: " + game.user.med_potion_num;
+				} else {
+					alert("You do not have a medium potion to use.");
+				}
+			}
+			
+			function drink_large_potion() {
+				if (game.user.lrg_potion_num > 0) {
+					game.user.lrg_potion_num = game.user.lrg_potion_num - 1;
+					game.user.hp = game.user.hp + items[2].heal;
+					playerDispHP.innerText = game.user.hp;
+					LPotionNum.innerText = "Large Potions: " + game.user.lrg_potion_num;
+				} else {
+					alert("You do not have a large potion to use.");
+				}	
+			}
+			
+			// We also want to display data about the game on the screen so my ma' can play without using the console
+			// - Create a <p> for the players name and hp
+			// - Create a <p> for the current_enemies name and hp
+			// - Using javascript DOM, update the .innerText of those elements
+			// - At the end of the "skirmish" function, update the hp on the screen for both player and monster			
+			playerDispName.innerText = game.user.name;
+			playerDispHP.innerText = game.user.hp;
+			enemyDispName.innerText = game.current_mob.name;
+			enemyDispHP.innerText = game.current_mob.hp;
+			
+			//***DYNAMIC IMAGES***
+			// 1. Add an "image" key to your enemy objects
+			// 2. Add an <img> on your page for the enemy
+			// 3. When a random enemy is selected, update the image on the page
+			var imgTag = document.querySelectorAll("img")[0];
+			imgTag.src = game.current_mob.image;
+			
+			//***LOOT CHANCE***
+			// 1. Create a file named 'items.html'
+			// 2. Make a variable in that file called "items" and set it to an array of objects
+			// 3. Each object should have a "name" key and a "chance" key, just like we did in class
+			// 4. Write a function that generates a random number, loops through all of the items and 
+			//	  picks an item at random from those items that have a higher "chance"
+			// 5. If your items are all buffs (i.e. potions or damage modifiers) you can adjust the user object directly by adding hp or attack
+			//		— Or you may add an "inventory" array on the user object to hold the loot (dont worry about using it yet in that case)
+			// 6. When an enemy is defeated, call this new function to determine if  the enemy dropped anything for you
+			var items = [
+				{				
+					name: "Small Potion", //items[0]
+					chance: 0.50,
+					heal: 10
+				},
+				{
+					name: "Medium Potion", //items[1]
+					chance: 0.33,
+					heal: 35
+				},
+				{
+					name: "Large Potion", //items[2]
+					chance: 0.10,
+					heal: 80
+				}
+			];
+			
+			function lootDropSystem() {
+				// 1. find a random number between 0 and 1
+				// 2. find all of the items that CAN be found by comparing the random number to their "chance"
+				// 3. put all possible items into a new array
+				// 4. select a random item from that array of possibilities
+				
+				var dropRandomNumber = Math.random();
+				console.log("Testing here", dropRandomNumber);
+				
+				var findableItems = [];
+								
+				//anonymous function
+				items.forEach(function(item) {
+					console.log("In a loop!");
+					
+					if(item.chance > dropRandomNumber) {
+						console.log("Item can be found!");
+						findableItems.push(item);
+					} else {
+						return "No items dropped."
+					}
+				});
+				
+				// at this point, findableItems should be populated with all the items that could be found
+				// now we just need to grab one of them
+				if(findableItems.length == 0) {
+					console.log("No items dropped.");
+					return "No items dropped."
+				} else {
+					var randomItemNumber = Math.floor(Math.random() * findableItems.length);
+					console.log(findableItems[randomItemNumber]);
+					
+					//updates player inventory
+					if (findableItems[randomItemNumber].name == "Small Potion"){
+						game.user.sml_potion_num = game.user.sml_potion_num + 1;
+						SPotionNum.innerText = "Small Potions: " + game.user.sml_potion_num;
+						console.log("Number of small potions: " + game.user.sml_potion_num);
+					}
+					if (findableItems[randomItemNumber].name == "Medium Potion"){
+						game.user.med_potion_num = game.user.med_potion_num + 1;
+						MPotionNum.innerText = "Medium Potions: " + game.user.med_potion_num;
+						console.log("Number of medium potions: " + game.user.med_potion_num);
+					}
+					if (findableItems[randomItemNumber].name == "Large Potion"){
+						game.user.lrg_potion_num = game.user.lrg_potion_num + 1;
+						LPotionNum.innerText = "Large Potions: " + game.user.lrg_potion_num;
+						console.log("Number of large potions: " + game.user.lrg_potion_num);
+					}
+					
+					return "Item dropped: " + findableItems[randomItemNumber].name;					
+				}
+			}
+		
+			//***OUTPUT MESSAGE***
+			// 1 get reference to div element
+			// 2 create function that accepts a message variable
+			// 3 prepend message, wrapped in a <p>, to div's
+			//		innerHTML property
+			var outputDiv = document.getElementById("output");
+			
+			function createOutput(message) {
+				outputDiv.innerHTML = "<p>" + message + "</p>" + outputDiv.innerHTML;
+			}
+			
+			//***FETCH***
+			//Easy-difficulty Monsters
+			fetch("https://mufall2020-bit240.github.io/monsters_api/monsters/easy.json").then(function(networkRequest) {
+				console.log(networkRequest);
+				return networkRequest.json();
+			}).then(function(jsonData) {
+				console.log("Json Data: ", jsonData);
+			});
+			
+			//Medium-difficulty Monsters
+			fetch("https://mufall2020-bit240.github.io/monsters_api/monsters/medium.json").then(function(networkRequest) {
+				console.log(networkRequest);
+				return networkRequest.json();
+			}).then(function(jsonData) {
+				console.log("Json Data: ", jsonData);
+			});
+			
+			//Hard-difficulty Monsters
+			fetch("https://mufall2020-bit240.github.io/monsters_api/monsters/hard.json").then(function(networkRequest) {
+				console.log(networkRequest);
+				return networkRequest.json();
+			}).then(function(jsonData) {
+				console.log("Json Data: ", jsonData);
+			});
+			
+
+		</script>
+	</body>
+</html>
